@@ -1,32 +1,19 @@
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.lang.Object;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.io.FileNotFoundException;
-import java.util.Iterator;
 import java.util.Scanner;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class JsonReader {
 
-    int indexOfKey = 0;
-    int nextIndexOfSpace = 0;
-    int lastIndexOfKey = 0;
-    static String key = "\"id\":";
-    
     public static String returnInfo(String urlGiven, String username, String password) {
     	
     	String jsonLine = "";
@@ -34,7 +21,6 @@ public class JsonReader {
     	URL url;
 		try {
 			String newUrl = urlGiven;
-//			String newUrl = formerUrl + "/" + id;
 			String authorization = username + ":" + password;
 			
 			url = new URL(newUrl);
@@ -66,9 +52,7 @@ public class JsonReader {
 		try {
 			
 			String formerUrl = urlGiven;
-			String newUrl = formerUrl + "/" + id;
-			String line;
-			
+			String newUrl = formerUrl + "/" + id;			
 			String authorization = username + ":" + password;
 			
 			url = new URL(newUrl);
@@ -116,70 +100,62 @@ public class JsonReader {
     	return patientName;
     }
     
-    @SuppressWarnings({ "unchecked", "resource" })
+    @SuppressWarnings({ "unchecked" })
 	public static String getPhenoData(String var1, String var2, String var3){
     String results = "";
-	try{
-		Scanner scanner = new Scanner(System.in);
-//		System.out.flush();
-//		String var1 = scanner.nextLine();
-//		String var2 = scanner.nextLine();
-//		String var3 = scanner.nextLine();
-		
+	try{		
 		JSONParser parser = new JSONParser();
 	
 		String line = returnInfo(var1, var2, var3);
 		
-//		while ((line = in.readLine()) != null) {
-		
-//		if(line != null) {
+		Object obj = parser.parse(line);
+		JSONObject jsonObject = (JSONObject) obj;
+		JSONArray patientSummaries = (JSONArray) jsonObject.get("patientSummaries"); 
+		String id;
 			
-			Object obj = parser.parse(line);
-			JSONObject jsonObject = (JSONObject) obj;
-			JSONArray patientSummaries = (JSONArray) jsonObject.get("patientSummaries"); 
+		int temp = 0;
 			
-			String id;
-			String eid;
+		try {
 			
-			int temp = 0;
-			
-			try {
-			
-				while (((JSONObject) patientSummaries.get(temp)) != null) {
-					temp++;
-				}
-			}catch (Exception e) {
-				
-			}finally {
-				
-				JSONArray jArray = new JSONArray();
-				
-				for(int i = 0; i < temp; i++) {
-					JSONObject array = ((JSONObject) patientSummaries.get(i));
-					JSONObject json = new JSONObject();
-					id = (String) array.get("id");
-					eid = (String) array.get("eid");
-					json.put("id", id);
-					
-					String jsonOutput = returnJson(var1, var2, var3, id);
-					String name = getName(jsonOutput);
-					json.put("name", name);
-
-					jArray.add(json);
-				}
-				results = jArray.toString();
+			while (((JSONObject) patientSummaries.get(temp)) != null) {
+				temp++;
 			}
+		}catch (Exception e) {
+				
+		}finally {
+				
+			JSONArray jArray = new JSONArray();
+				
+			for(int i = 0; i < temp; i++) {
+				JSONObject array = ((JSONObject) patientSummaries.get(i));
+				JSONObject json = new JSONObject();
+				id = (String) array.get("id"); 
+				json.put("id", id);
+					
+				String jsonOutput = returnJson(var1, var2, var3, id);
+				String name = getName(jsonOutput);
+				json.put("name", name);
+
+				jArray.add(json);
+			}
+			results = jArray.toString();
+		}
 	}
 	catch (Exception e){
 		e.printStackTrace();
 	}
-	
 		return results;
    }
     
     public static void main(String[] args){
-//    	System.out.println(getPhenoData("http://localhost:9090/rest/patients", "Admin", "admin"));
-    	System.out.println(getPhenoData("https://c4r.ccm.sickkids.ca/rest/patients", "FBernier", "Ber60ahs"));
+    	
+    	Scanner scanner = new Scanner(System.in);
+		System.out.flush();
+		String var1 = scanner.nextLine();
+		String var2 = scanner.nextLine();
+		String var3 = scanner.nextLine();
+		
+		System.out.println(getPhenoData(var1, var2, var3));
  	}
 
 }
